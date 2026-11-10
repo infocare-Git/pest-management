@@ -1,0 +1,7 @@
+/node_modules
+/.next/
+next-env.d.ts
+*.tsbuildinfo
+.env*
+# Pilot data store (JSON database + uploaded photos)
+/data/
