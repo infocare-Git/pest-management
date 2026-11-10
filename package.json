@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@upstash/redis": "^1.41.0",
     "next": "^15.5.4",
     "qrcode": "^1.5.4",
     "react": "^19.1.0",

@@ -6,10 +6,22 @@ import { useEffect, useRef, useState } from "react";
  * Plays Nepali guidance. Prefers a recorded MP3 (public/audio/<condition>.mp3,
  * recorded by a NAFHA expert) and falls back to the device's Nepali text-to-speech.
  */
-export default function VoiceGuidance({ text, audioSrc }: { text: string; audioSrc: string | null }) {
+export default function VoiceGuidance({ text, audioSrc: candidate }: { text: string; audioSrc: string }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
+  // Use the recorded MP3 only if it has actually been uploaded to public/audio.
+  const [audioSrc, setAudioSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(candidate, { method: "HEAD" })
+      .then((r) => alive && r.ok && (r.headers.get("content-type") ?? "").startsWith("audio") && setAudioSrc(candidate))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [candidate]);
 
   useEffect(() => {
     return () => {

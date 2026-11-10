@@ -22,6 +22,23 @@ On first run the app creates `data/db.json` with **sample data**: 12 orchards, 5
 7 batches and 44 historical cases. Pick a role in the sidebar (lead farmer, expert, authority,
 admin) to try each user's view.
 
+## Deploy on Vercel (auto-deploy from GitHub)
+
+1. In Vercel: **Add New → Project → Import** `infocare-Git/pest-management`. The framework is detected
+   as Next.js and no settings need to change. After that, every push to `main` deploys to
+   production automatically, and other branches get preview URLs.
+2. **Connect storage** so data survives redeploys: Project → **Storage → Create → Upstash (Redis)
+   → Connect to project**. This adds the `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or
+   `UPSTASH_REDIS_REST_*`) environment variables. Then redeploy. The app stores its database and
+   photos there automatically.
+   Without it the site still works, but uses temporary storage: a yellow banner says so, and data
+   is lost on each redeploy or cold start.
+3. Optional environment variables: `PUBLIC_BASE_URL` (the address printed in QR codes, e.g.
+   `https://pest-management.vercel.app`), `CLASSIFIER_URL` and `CLASSIFIER_TOKEN`.
+
+Vercel limits each request to 4.5 MB. The app shrinks photos on the phone (about 200 KB each),
+so a submission with 4 photos stays well under that limit.
+
 ## Walkthrough
 
 1. **Lead farmer**: open *Check a tree*, add photos, link the NAFHA orchard and submit. The case
@@ -57,11 +74,11 @@ admin) to try each user's view.
 | Item | Where | Status |
 | --- | --- | --- |
 | **Trained image model** | `src/server/classifier.ts` | A **demo classifier** is included. It gives stable fake predictions from the image bytes and is **not a real model**. Set `CLASSIFIER_URL` (and optionally `CLASSIFIER_TOKEN`) to point at a model service trained on NAFHA's labelled photos. The request/response format is documented in that file. The expert-reviewed cases from the pilot become labelled training data. |
-| **NAFHA orchard database** | `src/server/nafha.ts` | All orchard, nursery and batch access goes through the `NafhaOrchardDb` interface. It currently runs on a mock backed by `data/db.json`. To connect, add an implementation (direct SQL, REST API or sync job) and choose it in `createAdapter()`. Nurseries and batches are meant to be new tables in the NAFHA database, linked to its orchard IDs. |
+| **NAFHA orchard database** | `src/server/nafha.ts` | All orchard, nursery and batch access goes through the `NafhaOrchardDb` interface. It currently runs on a mock that holds sample records in the app's own store. To connect, add an implementation (direct SQL, REST API or sync job) and choose it in `createAdapter()`. Nurseries and batches are meant to be new tables in the NAFHA database, linked to its orchard IDs. |
 | **Guidance content** | `src/lib/catalog.ts` | The English steps and Nepali scripts are a **draft**. A NAFHA plant-protection expert must sign them off, and confirm the 3–4 priority pests and diseases. |
 | **Nepali voice** | `public/audio/<condition>.mp3` | If a recording exists (e.g. `citrus_greening.mp3`) it is played. Otherwise the app uses the device's Nepali text-to-speech, which many phones lack. **Recorded audio from a native speaker is strongly recommended.** |
 | **Login** | `src/server/auth.ts` | The role is a cookie set from the sidebar, with no authentication. Add real logins (NAFHA accounts or phone OTP) before use outside a supervised pilot. |
-| **Data store** | `src/server/db.ts` | A single JSON file and an uploads folder. This is fine for one district on one server. Move to Postgres or the NAFHA database for anything larger, and back up `data/`. |
+| **Data store** | `src/server/storage.ts` | Upstash Redis when configured (Vercel). Otherwise local files in `data/`. The whole database is a single JSON document guarded by a write lock, which is fine for one district. Move to Postgres or the NAFHA database for anything larger. |
 | **QR base URL** | env `PUBLIC_BASE_URL` | Set it to the public address so printed QR codes point to the right host. |
 | **Second crop** | `src/lib/types.ts` (`Crop`), `catalog.ts` | Add it once it has been confirmed. |
 

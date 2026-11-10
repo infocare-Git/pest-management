@@ -1,7 +1,7 @@
 import { ResetButton, SettingsForm } from "@/components/SmallControls";
 import { Card, PageHeader } from "@/components/ui";
 import { can, getActor } from "@/server/auth";
-import { readDb } from "@/server/db";
+import { readDb, store } from "@/server/db";
 
 export default async function SettingsPage() {
   const [actor, db] = await Promise.all([getActor(), readDb()]);
@@ -22,7 +22,17 @@ export default async function SettingsPage() {
           </div>
           <div>
             <dt className="font-medium">NAFHA orchard database</dt>
-            <dd className="text-slate-600">Mock adapter (src/server/nafha.ts) backed by data/db.json.</dd>
+            <dd className="text-slate-600">Mock adapter (src/server/nafha.ts) with sample records.</dd>
+          </div>
+          <div>
+            <dt className="font-medium">Data storage</dt>
+            <dd className="text-slate-600">
+              {store.kind === "redis"
+                ? "Upstash Redis (durable)."
+                : store.kind === "tmp"
+                  ? "Temporary server storage. Data is lost on redeploy. Connect Upstash Redis in Vercel to keep it."
+                  : "Local files in data/."}
+            </dd>
           </div>
         </dl>
         {admin && (

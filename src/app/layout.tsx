@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { getActor } from "@/server/auth";
-import { readDb } from "@/server/db";
+import { readDb, store } from "@/server/db";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +32,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             openFlags={openFlags}
           />
           <main className="min-w-0 flex-1">
+            {store.kind === "tmp" && (
+              <div className="bg-amber-100 px-4 py-2 text-center text-xs text-amber-900 print:hidden">
+                Demo storage: data entered here is temporary and will be lost on redeploy. Connect Upstash
+                Redis in Vercel to keep it.
+              </div>
+            )}
             <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8 print:p-0">{children}</div>
           </main>
         </div>

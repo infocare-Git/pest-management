@@ -1,5 +1,3 @@
-import { existsSync } from "fs";
-import path from "path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaseStatusBadge, ConditionBadge, FlagBadge, Photo } from "@/components/bits";
@@ -11,11 +9,6 @@ import { formatDate, pct } from "@/lib/labels";
 import { can, getActor } from "@/server/auth";
 import { readDb } from "@/server/db";
 import { nafha } from "@/server/nafha";
-
-function audioFor(condition: string): string | null {
-  const file = path.join(process.cwd(), "public", "audio", `${condition}.mp3`);
-  return existsSync(file) ? `/audio/${condition}.mp3` : null;
-}
 
 export default async function CasePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -51,7 +44,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
                   </span>
                 )}
               </div>
-              <VoiceGuidance text={final.voiceNe} audioSrc={audioFor(final.id)} />
+              <VoiceGuidance text={final.voiceNe} audioSrc={`/audio/${final.id}.mp3`} />
               {final.actionsEn.length > 0 && (
                 <div className="mt-5">
                   <h3 className="mb-2 text-sm font-semibold text-slate-900">What to do (English)</h3>
